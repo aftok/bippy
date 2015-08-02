@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DataKinds #-}
 
-module Network.BitcoinPP.Proto.Request where
+module Network.Bippy.Proto where
 
 import Data.ProtocolBuffers
 import Data.ByteString
@@ -48,3 +48,22 @@ data X509Certificates = X509Certificates
 
 instance Encode X509Certificates
 instance Decode X509Certificates
+
+data Payment = Payment
+  { payment_merchant_data :: Optional 1 (Value ByteString)  -- ^ From PaymentDetails.merchant_data
+  , transactions          :: Repeated 2 (Value ByteString)  -- ^ Signed transactions to satisfy PaymentDetails.outputs
+  , refund_to             :: Repeated 3 (Message Output)    -- ^ Where to send refunds, if a refund is necessary
+  , payment_memo          :: Optional 4 (Value Text)        -- ^ Human-readable message for the merchant
+  } deriving (Generic)
+
+instance Encode Payment
+instance Decode Payment
+
+data PaymentACK = PaymentACK
+  { payment   :: Required 1 (Message Payment) -- ^ Payment message that triggered this ACK
+  , ack_memo  :: Optional 2 (Value Text)      -- ^ human-readable message for customer
+  } deriving (Generic)
+
+instance Encode PaymentACK
+instance Decode PaymentACK
+
