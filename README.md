@@ -1,3 +1,10 @@
+Bippy
+=====
+
+Bippy is an implementation of the
+[BIP-70](https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki)
+Payment Protocol specification in Haskell.
+
 # Installation
 
 ```

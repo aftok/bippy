@@ -2,6 +2,14 @@
 {-# LANGUAGE DataKinds #-}
 
 module Network.Bippy.Proto where
+--  ( Output(..)
+--  , PaymentDetails(..)
+--  , PaymentRequest(..)
+--  , X509Certificates(..)
+--  , Payment(..)
+--  , PaymentACK(..)
+--  , defaultPaymentDet
+--  ) where
 
 import Data.ProtocolBuffers
 import Data.ByteString
@@ -39,11 +47,14 @@ data PaymentRequest = PaymentRequest
   , signature                   :: Required 5 (Value ByteString)  -- ^ pki-dependent signature
   } deriving (Generic)
 
+defaultPaymentDetailsVersion :: Word32
+defaultPaymentDetailsVersion =  1
+
 instance Encode PaymentRequest
 instance Decode PaymentRequest
 
 data X509Certificates = X509Certificates
-  { certificate :: Required 1 (Value ByteString) -- ^ DER-encoded X.509 certificate chain
+  { certificate :: Repeated 1 (Value ByteString) -- ^ DER-encoded X.509 certificate chain
   } deriving (Generic)
 
 instance Encode X509Certificates
