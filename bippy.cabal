@@ -28,7 +28,7 @@ library
   build-depends:       
       base        >=4.8.1 && <4.9
     , protobuf    >=0.2.1 && <0.3
-    , bytestring  
-    , text        
-    , haskoin
+    , bytestring  >=0.10  && <0.11
+    , text        >=1.2   && <1.3
+    , haskoin     >=0.1   && <0.2
 
