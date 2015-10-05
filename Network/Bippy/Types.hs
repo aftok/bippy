@@ -8,8 +8,14 @@ module Network.Bippy.Types
   , Expiry(..)
   , createPaymentDetails
   , createPaymentRequest
+  , paymentRequestMIMEType
+  , paymentMIMEType
+  , paymentAckMIMEType
   ) where
 
+import Crypto.PubKey.RSA.PKCS15 (sign)
+import Crypto.PubKey.RSA (Error, PrivateKey)
+import Crypto.PubKey.HashDescr (hashDescrSHA256)
 import Data.ByteString (ByteString, empty)
 import Data.ProtocolBuffers
 import Data.Serialize.Put
@@ -23,6 +29,15 @@ import Network.URI
 import Network.Haskoin.Script (ScriptOutput, encodeOutputBS)
 
 import qualified Network.Bippy.Proto as P
+
+paymentRequestMIMEType :: Text
+paymentRequestMIMEType = "application/bitcoin-paymentrequest"
+
+paymentMIMEType :: Text
+paymentMIMEType = "application/bitcoin-payment"
+
+paymentAckMIMEType :: Text
+paymentAckMIMEType = "application/bitcoin-paymentack"
 
 newtype Satoshi = Satoshi Word64 deriving (Eq, Show, Enum, Num, Ord, Real, Integral)
 
@@ -40,11 +55,13 @@ pkiCertChain None = Nothing
 pkiCertChain (X509SHA256 certs) = Just certs
 pkiCertChain (X509SHA1 certs) = Just certs
 
-data Network = Test | Main deriving (Eq, Show)
+data Network = TestNet 
+             | MainNet 
+             deriving (Eq, Show)
 
 networkName :: Network -> Text
-networkName Test = "test"
-networkName Main = "main"
+networkName TestNet = "test"
+networkName MainNet = "main"
 
 data Output = Output
   { amount :: Satoshi
@@ -77,13 +94,13 @@ createPaymentDetails :: Network
                      -> P.PaymentDetails
 createPaymentDetails network outputs time expiry memo payment_url merchant_data = 
   P.PaymentDetails 
-    { P.network = putField . Just $ networkName network
+    { P.network = putField $ Just (networkName network)
     , P.outputs = putField $ fmap outputProto outputs
     , P.time    = putField $ posixSeconds time
     , P.expires = putField $ posixSeconds . expiryTime <$> expiry
     , P.memo    = putField memo
     , P.payment_url = putField $ pack . show <$> payment_url
-    , P.merchant_data = putField $ merchant_data
+    , P.merchant_data = putField merchant_data
     } where
       posixSeconds = round . utcTimeToPOSIXSeconds
 
@@ -97,16 +114,17 @@ unsignedPaymentRequest pkid details =
     , P.signature = putField empty
     }
 
-createPaymentRequest :: PKIData -> P.PaymentDetails -> P.PaymentRequest
-createPaymentRequest pkid details = 
+createPaymentRequest :: PrivateKey -> PKIData -> P.PaymentDetails -> Either Error P.PaymentRequest
+createPaymentRequest key pkid details = 
   let unsignedReq = unsignedPaymentRequest pkid details
       serializedUnsignedRequest = runPut $ encodeMessage unsignedReq
-      signature :: ByteString
-      signature = empty -- FIXME!
-  in  P.PaymentRequest 
+      req s = P.PaymentRequest 
         { P.payment_details_version = P.payment_details_version unsignedReq
         , P.pki_type                = P.pki_type                unsignedReq
         , P.pki_data                = P.pki_data                unsignedReq
         , P.serialized_payment_details = P.serialized_payment_details unsignedReq
-        , P.signature = putField signature
+        , P.signature = putField s
         }
+      signature = sign Nothing hashDescrSHA256 key serializedUnsignedRequest
+  in  req <$> signature
+
