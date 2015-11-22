@@ -13,9 +13,9 @@ module Network.Bippy.Types
   , paymentAckMIMEType
   ) where
 
+import Crypto.PubKey.RSA (Error(..), PrivateKey)
 import Crypto.PubKey.RSA.PKCS15 (sign)
-import Crypto.PubKey.RSA (Error, PrivateKey)
-import Crypto.PubKey.HashDescr (hashDescrSHA256)
+import Crypto.PubKey.HashDescr (hashDescrSHA256, hashDescrSHA1)
 import Data.ByteString (ByteString, empty)
 import Data.ProtocolBuffers
 import Data.Serialize.Put
@@ -84,14 +84,14 @@ x509CertificatesProto certs =
 
 newtype Expiry = Expiry { expiryTime :: UTCTime }
 
-createPaymentDetails :: Network
-                     -> [Output]
-                     -> UTCTime
-                     -> Maybe Expiry
-                     -> Maybe Text
-                     -> Maybe URI
-                     -> Maybe ByteString
-                     -> P.PaymentDetails
+createPaymentDetails :: Network  -- ^ bitcoin network for which the payment request is to be created
+                     -> [Output] -- ^ set of outputs being requested
+                     -> UTCTime  -- ^ creation time of payment request
+                     -> Maybe Expiry  -- ^ optional time at which the request will expire
+                     -> Maybe Text    -- ^ arbitrary memo to be added to the payment request
+                     -> Maybe URI     -- ^ URL to which a Payment message may be sent for acknowledgement
+                     -> Maybe ByteString -- ^ arbitrary merchant payload
+                     -> P.PaymentDetails -- ^ Returns the Protocol Buffer containing payment details.
 createPaymentDetails network outputs time expiry memo payment_url merchant_data = 
   P.PaymentDetails 
     { P.network = putField $ Just (networkName network)
@@ -104,7 +104,9 @@ createPaymentDetails network outputs time expiry memo payment_url merchant_data 
     } where
       posixSeconds = round . utcTimeToPOSIXSeconds
 
-unsignedPaymentRequest :: PKIData -> P.PaymentDetails -> P.PaymentRequest
+unsignedPaymentRequest :: PKIData -- ^ certificate chain to be used to sign the request
+                       -> P.PaymentDetails -- ^ Payment details to be signed
+                       -> P.PaymentRequest -- ^ Returns the unsignemd payment request
 unsignedPaymentRequest pkid details = 
   P.PaymentRequest
     { P.payment_details_version = putField $ Just P.defaultPaymentDetailsVersion
@@ -125,6 +127,8 @@ createPaymentRequest key pkid details =
         , P.serialized_payment_details = P.serialized_payment_details unsignedReq
         , P.signature = putField s
         }
-      signature = sign Nothing hashDescrSHA256 key serializedUnsignedRequest
-  in  req <$> signature
+      signature (X509SHA256 _) = sign Nothing hashDescrSHA256 key serializedUnsignedRequest
+      signature (X509SHA1 _)   = sign Nothing hashDescrSHA1 key serializedUnsignedRequest
+      signature None = Left InvalidParameters
+  in  req <$> signature pkid
 
