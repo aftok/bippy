@@ -1,25 +1,12 @@
-module Network.BitcoinPP.Constants where
+module Network.Bippy.Constants where
 
-import Network.BitcoinPP.Types
+import Data.Text
 
-smallestUnitExponent :: Word64
-smallestUnitExponent = 8
+paymentRequestMIMEType :: Text
+paymentRequestMIMEType = "application/bitcoin-paymentrequest"
 
-maxCoins :: Word64
-maxCoins = 21000000
+paymentMIMEType :: Text
+paymentMIMEType = "application/bitcoin-payment"
 
-maxSatoshi :: Satoshi
-maxSatoshi = Satoshi $ maxCoins * (10 ^ smallestUnitExponent)
-
-coin :: Satoshi
-coin = Satoshi $ 10 ^ smallestUnitExponent
-
-milliCoin :: Satoshi
-milliCoin = Satoshi $ 10 ^ (smallestUnitExponent - 3)
-
-microCoin :: Satoshi
-microCoin = Satoshi $ 10 ^ (smallestUnitExponent - 6)
-
-satoshi :: Satoshi
-satoshi = Satoshi 1
-
+paymentAckMIMEType :: Text
+paymentAckMIMEType = "application/bitcoin-paymentack"
