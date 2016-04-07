@@ -1,15 +1,15 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DataKinds #-}
 
-module Network.Bippy.Proto where
---  ( Output(..)
---  , PaymentDetails(..)
---  , PaymentRequest(..)
---  , X509Certificates(..)
---  , Payment(..)
---  , PaymentACK(..)
---  , defaultPaymentDet
---  ) where
+module Network.Bippy.Proto 
+  ( Output(..)
+  , PaymentDetails(..)
+  , PaymentRequest(..)
+  , X509Certificates(..)
+  , Payment(..)
+  , PaymentACK(..)
+  , defaultPaymentDetailsVersion
+  ) where
 
 import Data.ProtocolBuffers
 import Data.ByteString
@@ -21,7 +21,7 @@ import GHC.Generics (Generic)
 data Output = Output
   { amount :: Optional 1 (Value Word64)     -- ^ integer-number-of-satoshis; use 0 as a default
   , script :: Required 2 (Value ByteString) -- ^ usually one of the standard Script forms
-  } deriving (Generic)
+  } deriving (Generic, Eq, Show)
 
 instance Encode Output
 instance Decode Output
@@ -34,7 +34,7 @@ data PaymentDetails = PaymentDetails
   , memo          :: Optional 5 (Value Text)    -- ^ Human-readable description of request for the customer
   , payment_url   :: Optional 6 (Value Text)    -- ^ URL to send Payment and get PaymentACK
   , merchant_data :: Optional 7 (Value ByteString) -- ^ Arbitrary data to include in the Payment message
-  } deriving (Generic)
+  } deriving (Generic, Eq, Show)
 
 instance Encode PaymentDetails
 instance Decode PaymentDetails
@@ -45,7 +45,7 @@ data PaymentRequest = PaymentRequest
   , pki_data                    :: Optional 3 (Value ByteString)  -- ^ depends on pki_type
   , serialized_payment_details  :: Required 4 (Value ByteString)  -- ^ PaymentDetails
   , signature                   :: Required 5 (Value ByteString)  -- ^ pki-dependent signature
-  } deriving (Generic)
+  } deriving (Generic, Eq, Show)
 
 defaultPaymentDetailsVersion :: Word32
 defaultPaymentDetailsVersion =  1
@@ -65,7 +65,7 @@ data Payment = Payment
   , transactions          :: Repeated 2 (Value ByteString)  -- ^ Signed transactions to satisfy PaymentDetails.outputs
   , refund_to             :: Repeated 3 (Message Output)    -- ^ Where to send refunds, if a refund is necessary
   , payment_memo          :: Optional 4 (Value Text)        -- ^ Human-readable message for the merchant
-  } deriving (Generic)
+  } deriving (Generic, Eq, Show)
 
 instance Encode Payment
 instance Decode Payment
@@ -73,7 +73,7 @@ instance Decode Payment
 data PaymentACK = PaymentACK
   { payment   :: Required 1 (Message Payment) -- ^ Payment message that triggered this ACK
   , ack_memo  :: Optional 2 (Value Text)      -- ^ human-readable message for customer
-  } deriving (Generic)
+  } deriving (Generic, Eq, Show)
 
 instance Encode PaymentACK
 instance Decode PaymentACK

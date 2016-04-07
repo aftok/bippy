@@ -12,7 +12,7 @@ import Data.ProtocolBuffers
 import Data.Serialize.Put
 import Data.Text (Text, pack)
 import Data.Time.Clock
-import Data.Time.Clock.POSIX
+import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 --import Data.X509
 
 import Network.URI

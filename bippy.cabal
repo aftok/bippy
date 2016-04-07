@@ -21,6 +21,8 @@ library
     Network.Bippy.Proto
     Network.Bippy.Constants
     Network.Bippy.Types
+    Network.Bippy.Test.Types
+    Network.Bippy.Test.Proto
 
   build-depends: base         
                , protobuf     
@@ -32,6 +34,7 @@ library
                , network-uri
                , time
                , x509
+               , QuickCheck                     
 
 Test-Suite spec
   hs-source-dirs:     test

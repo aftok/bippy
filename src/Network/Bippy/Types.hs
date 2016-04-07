@@ -28,9 +28,10 @@ pkiCertChain None = Nothing
 pkiCertChain (X509SHA256 certs) = Just certs
 pkiCertChain (X509SHA1 certs) = Just certs
 
-data Network = TestNet 
-             | MainNet 
-             deriving (Eq, Show)
+data Network 
+  = TestNet 
+  | MainNet 
+  deriving (Eq, Show)
 
 networkName :: Network -> Text
 networkName TestNet = "test"
@@ -39,7 +40,7 @@ networkName MainNet = "main"
 data Output = Output
   { amount :: Satoshi
   , script :: ScriptOutput
-  }
+  } deriving (Eq, Show)
 
 outputProto :: Output -> P.Output
 outputProto (Output (Satoshi a) s) = 
