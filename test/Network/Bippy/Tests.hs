@@ -7,7 +7,7 @@ import Test.Framework.Providers.Quickcheck2 (testProperty)
 tests :: [Test]
 test = 
   [ testGroup "creation of payment details"
---    [ testProperty "serialization roundtrip" $ \(ArbitraryPaymentRequest x) -> checkRoundtrip x
---    ]
+    [ --testProperty "serialization roundtrip" $ \(ArbitraryPaymentRequest x) -> checkRoundtrip x
+    ]
   ]
       
