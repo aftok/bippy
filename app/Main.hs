@@ -2,11 +2,16 @@ module Main where
   
 --import Options.Applicative
 
+import Control.Monad.Trans.Class (lift)
+import Control.Monad.Trans.Either
+import Crypto.PubKey.RSA.Types (Error(..))
+
 import qualified Data.ByteString as B
 import Data.ProtocolBuffers
 import Data.Serialize.Put
 import Data.Time.Clock
---import Data.String.Conversions
+import Data.X509
+import Data.X509.File (readSignedObject, readKeyFile)
 
 import Network.Bippy
 import Network.Bippy.Types
@@ -22,10 +27,29 @@ main = do
   ArbitraryHash160 hash <- generate arbitrary 
   putStrLn (show hash)
 
-  t <- getCurrentTime
-  B.writeFile "test.out" (runPut $ encodeMessage (sample1 t))
+  eitherT (putStrLn . show) pure writeSample1
+
+
+writeSample1 :: EitherT Error IO ()
+writeSample1 = do
+  t <- lift $ getCurrentTime
+  let paymentDetails = sample1 t
+  lift $ B.writeFile "sample1.paymentDetails.bip70" . runPut $ encodeMessage paymentDetails
+
+  -- load the private key
+  privKeys <- lift $ readKeyFile "test-resources/ca/intermediate/private/aftok.bip70.key.pem"
+
+  -- load the certificate chain
+  pkiEntries <- lift $ readSignedObject "test-resources/ca/intermediate/certs/ca-chain.cert.pem"
 
   -- generate payment request
+  let privKey = case head privKeys of
+        PrivKeyRSA k -> k
+        PrivKeyDSA _ -> error "DSA keys not supported for payment request signing."
+      pkiData = X509SHA256 . CertificateChain $ pkiEntries
+
+  paymentRequest <- createPaymentRequest privKey pkiData paymentDetails
+  lift $ B.writeFile "sample1.bitcoinpaymentrequest" . runPut $ encodeMessage paymentRequest
   -- write to payment request file
 
 address1 :: Address

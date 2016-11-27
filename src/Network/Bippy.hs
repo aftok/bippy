@@ -4,9 +4,13 @@ module Network.Bippy
   , createPaymentRequest
   ) where
 
-import Crypto.PubKey.RSA (Error(..), PrivateKey)
-import Crypto.PubKey.RSA.PKCS15 (sign)
-import Crypto.PubKey.HashDescr (hashDescrSHA256, hashDescrSHA1)
+import Control.Monad.Trans.Either
+
+import Crypto.PubKey.RSA.Types (Error(..), PrivateKey)
+import Crypto.PubKey.RSA.PKCS15 (signSafer)
+import Crypto.Random.Types (MonadRandom)
+import Crypto.Hash.Algorithms (SHA1(..), SHA256(..))
+
 import Data.ByteString (ByteString, empty)
 import Data.ProtocolBuffers
 import Data.Serialize.Put
@@ -52,10 +56,11 @@ unsignedPaymentRequest pkid details =
     , P.signature = putField empty
     }
 
-createPaymentRequest :: PrivateKey -- ^ private key to be used to sign the request - must correspond to head of the cert chain
+createPaymentRequest :: MonadRandom m 
+                     => PrivateKey -- ^ private key to be used to sign the request - must correspond to head of the cert chain
                      -> PKIData    -- ^ certificate chain to be used to sign the request
                      -> P.PaymentDetails  -- ^ Payment details to be signed
-                     -> Either Error P.PaymentRequest
+                     -> EitherT Error m P.PaymentRequest
 createPaymentRequest key pkid details = 
   let unsignedReq = unsignedPaymentRequest pkid details
       serializedUnsignedRequest = runPut $ encodeMessage unsignedReq
@@ -66,8 +71,8 @@ createPaymentRequest key pkid details =
         , P.serialized_payment_details = P.serialized_payment_details unsignedReq
         , P.signature = putField s
         }
-      signature (X509SHA256 _) = sign Nothing hashDescrSHA256 key serializedUnsignedRequest
-      signature (X509SHA1 _)   = sign Nothing hashDescrSHA1 key serializedUnsignedRequest
-      signature None = Left InvalidParameters
-  in  req <$> signature pkid
+      signf (X509SHA256 _) = signSafer (Just SHA256) 
+      signf (X509SHA1 _)   = signSafer (Just SHA1)   
+      signf None = \_ _ -> pure $ Left InvalidParameters
+  in  req <$> EitherT (signf pkid key serializedUnsignedRequest)
 

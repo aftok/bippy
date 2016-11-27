@@ -25,17 +25,18 @@ library
     Network.Bippy.Test.Proto
 
   build-depends: base >= 4.7 && < 5
-               , protobuf     
                , bytestring   
+               , either
                , text         
                , haskoin-core
                , cereal
-               , crypto-pubkey
+               , cryptonite
                , network-uri
+               , protobuf     
                , time
+               , QuickCheck                     
                , x509
                , x509-store
-               , QuickCheck                     
 
 executable bippy-cli
   hs-source-dirs:     app
@@ -49,12 +50,17 @@ executable bippy-cli
                , bippy
                , bytestring
                , cereal
+               , cryptonite
+               , either
                , haskoin-core
                , optparse-applicative
                , protobuf     
                , string-conversions
                , time
+               , transformers
                , QuickCheck                     
+               , x509
+               , x509-store
 
 test-suite bippy-test
   hs-source-dirs:     test

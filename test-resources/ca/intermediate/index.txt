@@ -1,0 +1,1 @@
+V	171207013317Z		1000	unknown	/C=US/ST=Colorado/L=Boulder/O=The Quixotic Company, LLC/OU=AFTOK/CN=AFTOK BIP70 Signing Service/emailAddress=kris@aftok.com
