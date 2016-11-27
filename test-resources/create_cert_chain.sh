@@ -66,6 +66,10 @@ openssl x509 -noout -text \
 openssl verify -CAfile intermediate/certs/ca-chain.cert.pem \
       intermediate/certs/aftok.bip70.cert.pem
 
+# Create the full certificate chain
+cat intermediate/certs/aftok.bip70.cert.pem \
+    intermediate/certs/intermediate.cert.pem \
+    certs/ca.cert.pem > intermediate/certs/aftok.bip70-chain.cert.pem
 #openssl x509 -trustout -signkey ca.key -days 365 -req -in ca.csr -out ca.pem
 ##Certificate A is created like this:
 #
