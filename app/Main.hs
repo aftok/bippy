@@ -37,7 +37,7 @@ writeSample1 :: EitherT Error IO ()
 writeSample1 = do
   t <- lift $ getCurrentTime
   let paymentDetails = sample1 t
-  lift $ B.writeFile "sample1.paymentDetails.bip70" . runPut $ encodeMessage paymentDetails
+  lift $ B.writeFile "work/sample1.paymentdetails" . runPut $ encodeMessage paymentDetails
 
   -- load the private key
   privKeys <- lift $ readKeyFile "test-resources/ca/intermediate/private/aftok.bip70.key.pem"
@@ -52,7 +52,7 @@ writeSample1 = do
       pkiData = X509SHA256 . CertificateChain $ pkiEntries
 
   paymentRequest <- createPaymentRequest privKey pkiData paymentDetails
-  lift $ B.writeFile "sample1.bitcoinpaymentrequest" . runPut $ encodeMessage paymentRequest
+  lift $ B.writeFile "work/sample1.bitcoinpaymentrequest" . runPut $ encodeMessage paymentRequest
   -- write to payment request file
 
 sourceAddr :: Address
