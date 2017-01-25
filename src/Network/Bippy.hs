@@ -1,12 +1,14 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Network.Bippy
   ( createPaymentDetails
   , unsignedPaymentRequest
   , createPaymentRequest
   ) where
 
-import Control.Monad.Trans.Either
+import Control.Monad.Except
 
-import Crypto.PubKey.RSA.Types (Error(..), PrivateKey)
+import Crypto.PubKey.RSA.Types (PrivateKey)
+import qualified Crypto.PubKey.RSA.Types as C (Error(..))
 import Crypto.PubKey.RSA.PKCS15 (signSafer)
 import Crypto.Random.Types (MonadRandom)
 import Crypto.Hash.Algorithms (SHA1(..), SHA256(..))
@@ -56,11 +58,11 @@ unsignedPaymentRequest pkid details =
     , P.signature = putField empty
     }
 
-createPaymentRequest :: MonadRandom m 
+createPaymentRequest :: (MonadRandom m, MonadError C.Error m)
                      => PrivateKey -- ^ private key to be used to sign the request - must correspond to head of the cert chain
                      -> PKIData    -- ^ certificate chain to be used to sign the request
                      -> P.PaymentDetails  -- ^ Payment details to be signed
-                     -> EitherT Error m P.PaymentRequest
+                     -> m P.PaymentRequest
 createPaymentRequest key pkid details = 
   let unsignedReq = unsignedPaymentRequest pkid details
       serializedUnsignedRequest = runPut $ encodeMessage unsignedReq
@@ -73,6 +75,6 @@ createPaymentRequest key pkid details =
         }
       signf (X509SHA256 _) = signSafer (Just SHA256) 
       signf (X509SHA1 _)   = signSafer (Just SHA1)   
-      signf None = \_ _ -> pure $ Left InvalidParameters
-  in  req <$> EitherT (signf pkid key serializedUnsignedRequest)
+      signf None = \_ _ -> pure $ Left C.InvalidParameters
+  in  either throwError (pure . req) =<< signf pkid key serializedUnsignedRequest
 

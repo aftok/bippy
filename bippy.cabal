@@ -31,6 +31,7 @@ library
                , haskoin-core
                , cereal
                , cryptonite
+               , mtl     
                , network-uri
                , protobuf     
                , time
@@ -53,6 +54,7 @@ executable bippy-cli
                , cryptonite
                , either
                , haskoin-core
+               , mtl     
                , optparse-applicative
                , protobuf     
                , string-conversions

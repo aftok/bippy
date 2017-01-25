@@ -1,14 +1,18 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 module Main where
   
 --import Options.Applicative
 
-import Control.Monad.Trans.Class (lift)
-import Control.Monad.Trans.Either
+import Control.Monad.Except
 import Crypto.PubKey.RSA.Types (Error(..))
+import Crypto.Random.Types (MonadRandom, getRandomBytes)
 
 import qualified Data.ByteString as B
 import Data.Maybe (fromJust)
-import Data.ProtocolBuffers
+import Data.ProtocolBuffers (encodeMessage)
 import Data.Serialize.Put
 import Data.Time.Clock
 import Data.X509
@@ -17,9 +21,10 @@ import Data.X509.File (readSignedObject, readKeyFile)
 import Network.Bippy
 import Network.Bippy.Types
 import qualified Network.Bippy.Proto as P
+
 import Network.Haskoin.Constants (switchToTestnet3)
-import Network.Haskoin.Script
-import Network.Haskoin.Crypto 
+import Network.Haskoin.Script (ScriptOutput(..))
+import Network.Haskoin.Crypto (Address(..), base58ToAddr, addrToBase58) 
 import Network.Haskoin.Test
 
 import Test.QuickCheck
@@ -30,20 +35,32 @@ main = do
   ArbitraryHash160 hash <- generate arbitrary 
   putStrLn (show . addrToBase58 . PubKeyAddress $ hash)
 
-  eitherT (putStrLn . show) pure writeSample1
+  either (putStrLn . show) pure =<< (runExceptT . runBippyM) writeSample1
 
+newtype BippyM e a = BippyM { runBippyM :: ExceptT e IO a }
+  deriving (Functor, Applicative, Monad)
 
-writeSample1 :: EitherT Error IO ()
+instance MonadRandom (BippyM e) where 
+  getRandomBytes = BippyM . lift . getRandomBytes
+
+instance MonadIO (BippyM e) where
+  liftIO = BippyM . liftIO
+
+instance MonadError e (BippyM e) where
+  throwError = BippyM . throwError
+  catchError b f = BippyM $ catchError (runBippyM b) (runBippyM . f)
+
+writeSample1 :: BippyM Error ()
 writeSample1 = do
-  t <- lift $ getCurrentTime
+  t <- liftIO $ getCurrentTime
   let paymentDetails = sample1 t
-  lift $ B.writeFile "work/sample1.paymentdetails" . runPut $ encodeMessage paymentDetails
+  liftIO $ B.writeFile "work/sample1.paymentdetails" . runPut $ encodeMessage paymentDetails
 
   -- load the private key
-  privKeys <- lift $ readKeyFile "test-resources/ca/intermediate/private/aftok.bip70.key.pem"
+  privKeys <- liftIO $ readKeyFile "test-resources/ca/intermediate/private/aftok.bip70.key.pem"
 
   -- load the certificate chain
-  pkiEntries <- lift $ readSignedObject "test-resources/ca/intermediate/certs/aftok.bip70-chain.cert.pem"
+  pkiEntries <- liftIO $ readSignedObject "test-resources/ca/intermediate/certs/aftok.bip70-chain.cert.pem"
 
   -- generate payment request
   let privKey = case head privKeys of
@@ -52,7 +69,7 @@ writeSample1 = do
       pkiData = X509SHA256 . CertificateChain $ pkiEntries
 
   paymentRequest <- createPaymentRequest privKey pkiData paymentDetails
-  lift $ B.writeFile "work/sample1.bitcoinpaymentrequest" . runPut $ encodeMessage paymentRequest
+  liftIO $ B.writeFile "work/sample1.bitcoinpaymentrequest" . runPut $ encodeMessage paymentRequest
   -- write to payment request file
 
 sourceAddr :: Address
