@@ -24,7 +24,7 @@ library
     Network.Bippy.Test.Types
     Network.Bippy.Test.Proto
 
-  build-depends: base >= 4.7 && < 5
+  build-depends: base 
                , bytestring   
                , either
                , text         
@@ -47,7 +47,7 @@ executable bippy-cli
                     , ScopedTypeVariables
   ghc-options:        -threaded -rtsopts -with-rtsopts=-N -Wall 
                       -- -Werror
-  build-depends: base >= 4.7 && < 5
+  build-depends: base
                , bippy
                , bytestring
                , cereal
