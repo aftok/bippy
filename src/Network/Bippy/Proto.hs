@@ -29,10 +29,10 @@ instance Decode Output
 data PaymentDetails = PaymentDetails
   { network       :: Optional 1 (Value Text)    -- ^ "main" or "test"; use "main" as a default
   , outputs       :: Repeated 2 (Message Output)  -- ^ Where payment should be sent
-  , time          :: Required 3 (Value Word64)  -- ^ Timestamp; when payment request created
-  , expires       :: Optional 4 (Value Word64)  -- ^ Timestamp; when this request should be considered invalid
-  , memo          :: Optional 5 (Value Text)    -- ^ Human-readable description of request for the customer
-  , payment_url   :: Optional 6 (Value Text)    -- ^ URL to send Payment and get PaymentACK
+  , time          :: Required 3 (Value Word64)  -- ^ POSIX timestamp of payment request creation
+  , expires       :: Optional 4 (Value Word64)  -- ^ POSIX timestamp of when this request should be considered invalid
+  , memo          :: Optional 5 (Value Text)    -- ^ Human-readable description of request for customer
+  , payment_url   :: Optional 6 (Value Text)    -- ^ URL which can receive Payment and return PaymentACK
   , merchant_data :: Optional 7 (Value ByteString) -- ^ Arbitrary data to include in the Payment message
   } deriving (Generic, Eq, Show)
 
@@ -77,4 +77,3 @@ data PaymentACK = PaymentACK
 
 instance Encode PaymentACK
 instance Decode PaymentACK
-

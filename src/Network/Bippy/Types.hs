@@ -2,11 +2,15 @@
 
 module Network.Bippy.Types where
 
+import Data.ByteString
 import Data.ProtocolBuffers
+import Data.Serialize.Get (runGet)
 import Data.Text (Text)
 import Data.Time.Clock
+import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Data.Word (Word64)
 import Data.X509
+
 
 import Network.Haskoin.Script (ScriptOutput, encodeOutputBS)
 
@@ -57,4 +61,14 @@ x509CertificatesProto certs =
         }
 
 newtype Expiry = Expiry { expiryTime :: UTCTime }
+
+getPaymentDetails :: P.PaymentRequest -> Either String P.PaymentDetails
+getPaymentDetails req = 
+  let serialized_payment_bytes :: ByteString
+      serialized_payment_bytes = getField $ P.serialized_payment_details req
+  in  runGet decodeMessage serialized_payment_bytes
+
+getExpires :: P.PaymentDetails -> Maybe Expiry
+getExpires d = 
+  (Expiry . posixSecondsToUTCTime . fromIntegral) <$> getField (P.expires d)
 

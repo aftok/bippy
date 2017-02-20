@@ -77,4 +77,3 @@ createPaymentRequest key pkid details =
       signf (X509SHA1 _)   = signSafer (Just SHA1)   
       signf None = \_ _ -> pure $ Left C.InvalidParameters
   in  either throwError (pure . req) =<< signf pkid key serializedUnsignedRequest
-
