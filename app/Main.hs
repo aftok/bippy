@@ -68,7 +68,7 @@ writeSample1 = do
         PrivKeyDSA _ -> error "DSA keys not supported for payment request signing."
       pkiData = X509SHA256 . CertificateChain $ pkiEntries
 
-  paymentRequest <- createPaymentRequest privKey pkiData paymentDetails
+  paymentRequest <- BippyM . ExceptT $ createPaymentRequest privKey pkiData paymentDetails
   liftIO $ B.writeFile "work/sample1.bitcoinpaymentrequest" . runPut $ encodeMessage paymentRequest
   -- write to payment request file
 

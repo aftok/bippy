@@ -5,8 +5,6 @@ module Network.Bippy
   , createPaymentRequest
   ) where
 
-import Control.Monad.Except
-
 import Crypto.PubKey.RSA.Types (PrivateKey)
 import qualified Crypto.PubKey.RSA.Types as C (Error(..))
 import Crypto.PubKey.RSA.PKCS15 (signSafer)
@@ -58,11 +56,11 @@ unsignedPaymentRequest pkid details =
     , P.signature = putField empty
     }
 
-createPaymentRequest :: (MonadRandom m, MonadError C.Error m)
+createPaymentRequest :: (MonadRandom m)
                      => PrivateKey -- ^ private key to be used to sign the request - must correspond to head of the cert chain
                      -> PKIData    -- ^ certificate chain to be used to sign the request
                      -> P.PaymentDetails  -- ^ Payment details to be signed
-                     -> m P.PaymentRequest
+                     -> m (Either C.Error P.PaymentRequest)
 createPaymentRequest key pkid details = 
   let unsignedReq = unsignedPaymentRequest pkid details
       serializedUnsignedRequest = runPut $ encodeMessage unsignedReq
@@ -76,4 +74,4 @@ createPaymentRequest key pkid details =
       signf (X509SHA256 _) = signSafer (Just SHA256) 
       signf (X509SHA1 _)   = signSafer (Just SHA1)   
       signf None = \_ _ -> pure $ Left C.InvalidParameters
-  in  either throwError (pure . req) =<< signf pkid key serializedUnsignedRequest
+  in  fmap req <$> signf pkid key serializedUnsignedRequest
