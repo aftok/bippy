@@ -1,9 +1,10 @@
 module Network.Bippy.Test.Proto
-( ArbPaymentDetails(..)
+( arbitraryPaymentDetails
 ) where
 
 import Data.ByteString (pack)
 import Data.String (fromString)
+import Network.Haskoin.Constants (Network)
 
 import Network.Bippy (createPaymentDetails)
 import Network.Bippy.Proto
@@ -11,25 +12,21 @@ import Network.Bippy.Types
 import Network.Bippy.Test.Types
 
 import Test.QuickCheck
-  ( Arbitrary
+  ( Gen
   , arbitrary
-  , oneof
   , listOf
   )
 
+import Test.QuickCheck.Instances.Time ()
+
 import Test.QuickCheck.Gen (suchThatMaybe)
 
-data ArbPaymentDetails = ArbPaymentDetails PaymentDetails
-  deriving (Eq, Show)
-
-instance Arbitrary ArbPaymentDetails where
-  arbitrary = do
-    network' <- oneof $ fmap pure [MainNet, TestNet]
-    outputs' <- fmap runArbOutput <$> listOf arbitrary
-    time'    <- runArbUTCTime <$> arbitrary
-    expires' <- fmap Expiry <$> (runArbUTCTime <$> arbitrary) `suchThatMaybe` (> time')
-    memo'    <- fmap fromString <$> arbitrary
-    payment_url' <- pure Nothing -- FIXME
-    merchant_data' <- fmap pack <$> arbitrary
-    pure . ArbPaymentDetails $ 
-      createPaymentDetails network' outputs' time' expires' memo' payment_url' merchant_data'
+arbitraryPaymentDetails :: Network -> Gen PaymentDetails
+arbitraryPaymentDetails network' = do
+  outputs' <- listOf $ arbitraryOutput network'
+  time'    <- arbitrary
+  expires' <- fmap Expiry <$> arbitrary `suchThatMaybe` (> time')
+  memo'    <- fmap fromString <$> arbitrary
+  payment_url' <- pure Nothing -- FIXME
+  merchant_data' <- fmap pack <$> arbitrary
+  pure $ createPaymentDetails network' outputs' time' expires' memo' payment_url' merchant_data'

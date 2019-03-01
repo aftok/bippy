@@ -3,4 +3,4 @@ packages:
 - '.'
 allow-newer: true
 extra-deps: []
-resolver: lts-7.16
+resolver: lts-13.9

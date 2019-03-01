@@ -1,13 +1,13 @@
 module Network.Bippy.Tests (tests) where
 
 import Test.Framework (Test, testGroup)
-import Test.Quickcheck (Property, (==>))
-import Test.Framework.Providers.Quickcheck2 (testProperty)
+import Test.QuickCheck (Property, (==>))
+import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 tests :: [Test]
-test = 
+tests =
   [ testGroup "creation of payment details"
-    [ --testProperty "serialization roundtrip" $ \(ArbitraryPaymentRequest x) -> checkRoundtrip x
+    [ testProperty "serialization roundtrip" $ \(ArbitraryPaymentRequest x) -> checkRoundtrip x
     ]
   ]
-      
+

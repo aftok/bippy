@@ -21,6 +21,7 @@ import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 
 import Network.URI
 import Network.Bippy.Types
+import Network.Haskoin.Constants (Network, getNetworkName)
 
 import qualified Network.Bippy.Proto as P
 
@@ -32,9 +33,9 @@ createPaymentDetails :: Network  -- ^ bitcoin network for which the payment requ
                      -> Maybe URI     -- ^ URL to which a Payment message may be sent for acknowledgement
                      -> Maybe ByteString -- ^ arbitrary merchant payload
                      -> P.PaymentDetails -- ^ Returns the Protocol Buffer containing payment details.
-createPaymentDetails network outputs time expiry memo payment_url merchant_data = 
-  P.PaymentDetails 
-    { P.network = putField $ Just (networkName network)
+createPaymentDetails network outputs time expiry memo payment_url merchant_data =
+  P.PaymentDetails
+    { P.network = putField . Just . pack $ getNetworkName network
     , P.outputs = putField $ fmap outputProto outputs
     , P.time    = putField $ posixSeconds time
     , P.expires = putField $ posixSeconds . expiryTime <$> expiry
@@ -47,7 +48,7 @@ createPaymentDetails network outputs time expiry memo payment_url merchant_data 
 unsignedPaymentRequest :: PKIData -- ^ certificate chain to be used to sign the request
                        -> P.PaymentDetails -- ^ Payment details to be signed
                        -> P.PaymentRequest -- ^ Returns the unsignemd payment request
-unsignedPaymentRequest pkid details = 
+unsignedPaymentRequest pkid details =
   P.PaymentRequest
     { P.payment_details_version = putField $ Just P.defaultPaymentDetailsVersion
     , P.pki_type = putField . Just $ pkiName pkid
@@ -61,17 +62,17 @@ createPaymentRequest :: (MonadRandom m)
                      -> PKIData    -- ^ certificate chain to be used to sign the request
                      -> P.PaymentDetails  -- ^ Payment details to be signed
                      -> m (Either C.Error P.PaymentRequest)
-createPaymentRequest key pkid details = 
+createPaymentRequest key pkid details =
   let unsignedReq = unsignedPaymentRequest pkid details
       serializedUnsignedRequest = runPut $ encodeMessage unsignedReq
-      req s = P.PaymentRequest 
+      req s = P.PaymentRequest
         { P.payment_details_version = P.payment_details_version unsignedReq
         , P.pki_type                = P.pki_type                unsignedReq
         , P.pki_data                = P.pki_data                unsignedReq
         , P.serialized_payment_details = P.serialized_payment_details unsignedReq
         , P.signature = putField s
         }
-      signf (X509SHA256 _) = signSafer (Just SHA256) 
-      signf (X509SHA1 _)   = signSafer (Just SHA1)   
+      signf (X509SHA256 _) = signSafer (Just SHA256)
+      signf (X509SHA1 _)   = signSafer (Just SHA1)
       signf None = \_ _ -> pure $ Left C.InvalidParameters
   in  fmap req <$> signf pkid key serializedUnsignedRequest

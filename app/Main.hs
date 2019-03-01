@@ -3,7 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module Main where
-  
+
 --import Options.Applicative
 
 import Control.Monad.Except
@@ -22,25 +22,23 @@ import Network.Bippy
 import Network.Bippy.Types
 import qualified Network.Bippy.Proto as P
 
-import Network.Haskoin.Constants (switchToTestnet3)
-import Network.Haskoin.Script (ScriptOutput(..))
-import Network.Haskoin.Crypto (Address(..), base58ToAddr, addrToBase58) 
+import Network.Haskoin.Constants (btcTest)
+import Network.Haskoin.Address (Address(..), stringToAddr, addrToString, addressToOutput)
 import Network.Haskoin.Test
 
 import Test.QuickCheck
 
 main :: IO ()
 main = do
-  switchToTestnet3
-  ArbitraryHash160 hash <- generate arbitrary 
-  putStrLn (show . addrToBase58 . PubKeyAddress $ hash)
+  hash <- generate arbitraryHash160
+  putStrLn (show . addrToString btcTest . PubKeyAddress $ hash)
 
   either (putStrLn . show) pure =<< (runExceptT . runBippyM) writeSample1
 
 newtype BippyM e a = BippyM { runBippyM :: ExceptT e IO a }
   deriving (Functor, Applicative, Monad)
 
-instance MonadRandom (BippyM e) where 
+instance MonadRandom (BippyM e) where
   getRandomBytes = BippyM . lift . getRandomBytes
 
 instance MonadIO (BippyM e) where
@@ -65,7 +63,7 @@ writeSample1 = do
   -- generate payment request
   let privKey = case head privKeys of
         PrivKeyRSA k -> k
-        PrivKeyDSA _ -> error "DSA keys not supported for payment request signing."
+        _ -> error "Only RSA keys are supported for payment request signing."
       pkiData = X509SHA256 . CertificateChain $ pkiEntries
 
   paymentRequest <- BippyM . ExceptT $ createPaymentRequest privKey pkiData paymentDetails
@@ -73,20 +71,20 @@ writeSample1 = do
   -- write to payment request file
 
 sourceAddr :: Address
-sourceAddr = fromJust $ base58ToAddr "mmaFdFShk82G84DaccdqEvUCrMmSAAixJs"
+sourceAddr = fromJust $ stringToAddr btcTest "mmaFdFShk82G84DaccdqEvUCrMmSAAixJs"
 
 recipient1 :: Address
-recipient1 = fromJust $ base58ToAddr "mmBiyGP8TrX1erzEbX8jR5F56fLoxSX2Dr"
+recipient1 = fromJust $ stringToAddr btcTest "mmBiyGP8TrX1erzEbX8jR5F56fLoxSX2Dr"
 
 recipient2 :: Address
-recipient2 = fromJust $ base58ToAddr "n4XB4L5rNpPD29CGDMfV6hcfLPPC13HkXV"
+recipient2 = fromJust $ stringToAddr btcTest "n4XB4L5rNpPD29CGDMfV6hcfLPPC13HkXV"
 
 sample1 :: UTCTime -> P.PaymentDetails
-sample1 sampleTime = 
+sample1 sampleTime =
   createPaymentDetails
-    TestNet
-    [ Output (Satoshi 10000) (PayPKHash recipient1) 
-    , Output (Satoshi 20000) (PayPKHash recipient2)
+    btcTest
+    [ Output (Satoshi 10000) (addressToOutput recipient1)
+    , Output (Satoshi 20000) (addressToOutput recipient2)
     ]
     sampleTime
     Nothing Nothing Nothing Nothing

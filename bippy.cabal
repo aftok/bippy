@@ -36,6 +36,7 @@ library
                , protobuf     
                , time
                , QuickCheck                     
+               , quickcheck-instances
                , x509
                , x509-store
 
@@ -46,7 +47,7 @@ executable bippy-cli
   default-extensions: OverloadedStrings
                     , ScopedTypeVariables
   ghc-options:        -threaded -rtsopts -with-rtsopts=-N -Wall 
-                      -- -Werror
+                      -Werror
   build-depends: base
                , bippy
                , bytestring
@@ -70,6 +71,9 @@ test-suite bippy-test
   default-extensions: OverloadedStrings
                     , ScopedTypeVariables
   ghc-options:        -threaded -rtsopts -with-rtsopts=-N -Wall -Werror
+  other-modules:     
+    Network.Bippy.Tests
+
   type:               exitcode-stdio-1.0
   main-is:            Main.hs
   build-depends: bippy
