@@ -1,8 +1,10 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Network.Bippy.Types where
 
 import Data.ByteString
+import Control.Lens (makePrisms)
 import Data.ProtocolBuffers
 import Data.Serialize.Get (runGet)
 import Data.Text (Text)
@@ -17,6 +19,7 @@ import Network.Haskoin.Script (ScriptOutput, encodeOutputBS)
 import qualified Network.Bippy.Proto as P
 
 newtype Satoshi = Satoshi Word64 deriving (Eq, Enum, Ord)
+makePrisms ''Satoshi
 
 instance Semigroup Satoshi where
   (Satoshi a) <> (Satoshi b) = Satoshi (a + b)
