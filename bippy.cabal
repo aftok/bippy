@@ -26,18 +26,18 @@ library
 
   build-depends: base 
                , bytestring   
-               , either
-               , text         
-               , haskoin-core
                , cereal
                , cryptonite
+               , either
+               , haskoin-core
                , lens
                , mtl     
                , network-uri
                , protobuf     
-               , time
                , QuickCheck                     
                , quickcheck-instances
+               , text         
+               , time
                , x509
                , x509-store
 
