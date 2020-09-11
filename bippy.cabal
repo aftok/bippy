@@ -1,5 +1,5 @@
 name:                bippy
-version:             0.1.0.0
+version:             0.2.0.0
 synopsis:            An implementation of the BIP-70/71/72 Bitcoin Payment Protocol in Haskell
 homepage:            https://github.com/aftok/bitcoin-pp
 license:             MIT

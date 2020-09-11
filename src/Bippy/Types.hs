@@ -18,7 +18,7 @@ import Haskoin.Script (ScriptOutput, encodeOutputBS)
 
 import qualified Bippy.Proto as P
 
-newtype Satoshi = Satoshi Word64 deriving (Eq, Enum, Ord)
+newtype Satoshi = Satoshi Word64 deriving (Eq, Enum, Ord, Show)
 makePrisms ''Satoshi
 
 instance Semigroup Satoshi where
