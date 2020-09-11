@@ -18,20 +18,20 @@ import Data.Time.Clock
 import Data.X509
 import Data.X509.File (readSignedObject, readKeyFile)
 
-import Network.Bippy
-import Network.Bippy.Types
-import qualified Network.Bippy.Proto as P
+import Bippy
+import Bippy.Types
+import qualified Bippy.Proto as P
 
-import Network.Haskoin.Constants (btcTest)
-import Network.Haskoin.Address (Address(..), stringToAddr, addrToString, addressToOutput)
-import Network.Haskoin.Test
+import Haskoin.Constants (btcTest)
+import Haskoin.Address (Address(..), textToAddr, addrToText, addressToOutput)
+import Haskoin.Util.Arbitrary.Crypto (arbitraryHash160)
 
 import Test.QuickCheck
 
 main :: IO ()
 main = do
   hash <- generate arbitraryHash160
-  putStrLn (show . addrToString btcTest . PubKeyAddress $ hash)
+  putStrLn (show . addrToText btcTest . PubKeyAddress $ hash)
 
   either (putStrLn . show) pure =<< (runExceptT . runBippyM) writeSample1
 
@@ -71,13 +71,13 @@ writeSample1 = do
   -- write to payment request file
 
 sourceAddr :: Address
-sourceAddr = fromJust $ stringToAddr btcTest "mmaFdFShk82G84DaccdqEvUCrMmSAAixJs"
+sourceAddr = fromJust $ textToAddr btcTest "mmaFdFShk82G84DaccdqEvUCrMmSAAixJs"
 
 recipient1 :: Address
-recipient1 = fromJust $ stringToAddr btcTest "mmBiyGP8TrX1erzEbX8jR5F56fLoxSX2Dr"
+recipient1 = fromJust $ textToAddr btcTest "mmBiyGP8TrX1erzEbX8jR5F56fLoxSX2Dr"
 
 recipient2 :: Address
-recipient2 = fromJust $ stringToAddr btcTest "n4XB4L5rNpPD29CGDMfV6hcfLPPC13HkXV"
+recipient2 = fromJust $ textToAddr btcTest "n4XB4L5rNpPD29CGDMfV6hcfLPPC13HkXV"
 
 sample1 :: UTCTime -> P.PaymentDetails
 sample1 sampleTime =

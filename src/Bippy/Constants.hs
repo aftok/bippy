@@ -1,4 +1,4 @@
-module Network.Bippy.Constants where
+module Bippy.Constants where
 
 import Data.Text
 

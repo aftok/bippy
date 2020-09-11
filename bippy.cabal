@@ -6,7 +6,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Kris Nuttycombe
 maintainer:          kris@aftok.com
-category:            Network
+category:            Bitcoin, Finance
 build-type:          Simple
 cabal-version:       >=1.10
 
@@ -17,12 +17,12 @@ library
                     , ScopedTypeVariables
   ghc-options:        -Wall -Werror
   exposed-modules:     
-    Network.Bippy
-    Network.Bippy.Proto
-    Network.Bippy.Constants
-    Network.Bippy.Types
-    Network.Bippy.Test.Types
-    Network.Bippy.Test.Proto
+    Bippy
+    Bippy.Proto
+    Bippy.Constants
+    Bippy.Types
+    Bippy.Test.Types
+    Bippy.Test.Proto
 
   build-depends: base 
                , bytestring   
@@ -73,7 +73,7 @@ test-suite bippy-test
                     , ScopedTypeVariables
   ghc-options:        -threaded -rtsopts -with-rtsopts=-N -Wall -Werror
   other-modules:     
-    Network.Bippy.Tests
+    Bippy.Tests
   type:               exitcode-stdio-1.0
   main-is:            Main.hs
   build-depends: bippy

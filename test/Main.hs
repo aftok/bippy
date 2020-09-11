@@ -2,7 +2,7 @@ module Main where
 
 import Test.Framework (defaultMain)
 
-import qualified Network.Bippy.Tests (tests)
+import qualified Bippy.Tests (tests)
 
 main :: IO ()
-main = defaultMain Network.Bippy.Tests.tests
+main = defaultMain Bippy.Tests.tests

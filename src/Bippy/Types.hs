@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Network.Bippy.Types where
+module Bippy.Types where
 
 import Data.ByteString
 import Control.Lens (makePrisms)
@@ -14,9 +14,9 @@ import Data.Word (Word64)
 import Data.X509
 
 
-import Network.Haskoin.Script (ScriptOutput, encodeOutputBS)
+import Haskoin.Script (ScriptOutput, encodeOutputBS)
 
-import qualified Network.Bippy.Proto as P
+import qualified Bippy.Proto as P
 
 newtype Satoshi = Satoshi Word64 deriving (Eq, Enum, Ord)
 makePrisms ''Satoshi

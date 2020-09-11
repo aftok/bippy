@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DataKinds #-}
 
-module Network.Bippy.Proto 
+module Bippy.Proto
   ( Output(..)
   , PaymentDetails(..)
   , PaymentRequest(..)

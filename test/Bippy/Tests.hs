@@ -1,4 +1,4 @@
-module Network.Bippy.Tests (tests) where
+module Bippy.Tests (tests) where
 
 import Test.Framework (Test, testGroup)
 import Test.QuickCheck (Property, (==>))

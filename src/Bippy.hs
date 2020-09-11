@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
-module Network.Bippy
+module Bippy
   ( createPaymentDetails
   , unsignedPaymentRequest
   , createPaymentRequest
@@ -20,10 +20,10 @@ import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 --import Data.X509
 
 import Network.URI
-import Network.Bippy.Types
-import Network.Haskoin.Constants (Network, getNetworkName)
+import Bippy.Types
+import Haskoin.Constants (Network, getNetworkName)
 
-import qualified Network.Bippy.Proto as P
+import qualified Bippy.Proto as P
 
 createPaymentDetails :: Network  -- ^ bitcoin network for which the payment request is to be created
                      -> [Output] -- ^ set of outputs being requested

@@ -1,11 +1,12 @@
-module Network.Bippy.Test.Types
+module Bippy.Test.Types
 ( arbitrarySatoshi
 , arbitraryOutput
 ) where
 
-import           Network.Bippy.Types              (Satoshi(..), Output(..))
-import qualified Network.Haskoin.Constants        as H
-import qualified Network.Haskoin.Test             as H
+import           Bippy.Types              (Satoshi(..), Output(..))
+import qualified Haskoin.Constants                  as H
+import qualified Haskoin.Util.Arbitrary.Transaction as H
+import qualified Haskoin.Util.Arbitrary.Script      as H
 
 import           Test.QuickCheck                  (Gen)
 

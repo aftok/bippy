@@ -1,6 +1,7 @@
-flags: {}
+resolver: lts-16.13
 packages:
-- '.'
-allow-newer: true
-extra-deps: []
-resolver: lts-13.9
+  - '.'
+extra-deps:
+  - secp256k1-haskell-0.4.0
+  - git: https://github.com/haskoin/haskoin-core.git
+    commit: 202dd677f377c82aac23224f5b2fedad57db5574
