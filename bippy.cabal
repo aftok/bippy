@@ -1,5 +1,6 @@
+cabal-version:       3.0
 name:                bippy
-version:             0.2.0.0
+version:             0.3.0.0
 synopsis:            An implementation of the BIP-70/71/72 Bitcoin Payment Protocol in Haskell
 homepage:            https://github.com/aftok/bitcoin-pp
 license:             MIT
@@ -8,14 +9,36 @@ author:              Kris Nuttycombe
 maintainer:          kris@aftok.com
 category:            Bitcoin, Finance
 build-type:          Simple
-cabal-version:       >=1.10
 
-library
-  hs-source-dirs:     src
+common buildenv
   default-language:   Haskell2010
   default-extensions: OverloadedStrings
                     , ScopedTypeVariables
   ghc-options:        -Wall -Werror
+  build-depends: 
+    base                          >= 4.16.3 && < 4.17,
+    bytestring                    >= 0.11.3 && < 0.12,
+    mtl                           >= 2.2.2 && < 2.3,
+    transformers                  >= 0.5.6 && < 0.6,
+    cereal                        >= 0.5.8 && < 0.6,
+    cryptonite                    >= 0.30 && < 0.31,
+    either                        >= 5.0.2 && < 5.1,
+    text                          >= 1.2.5 && < 1.3,
+    haskoin-core                  >= 0.21.2 && < 0.22,
+    time                          >= 1.11.1 && < 1.12,
+    string-conversions            >= 0.4.0 && < 0.5,
+    lens                          >= 5.2.3 && < 5.3,
+    network-uri                   >= 2.6.4 && < 2.7,
+    protobuf                      >= 0.2.1 && < 0.3,
+    quickcheck-instances          >= 0.3.30 && < 0.4,
+    x509                          >= 1.7.7 && < 1.8,
+    x509-store                    >= 1.6.9 && < 1.7,
+    optparse-applicative          >= 0.18.1 && < 0.19,
+    QuickCheck                    >= 2.14.3 && < 2.15,
+
+library
+  import:             buildenv
+  hs-source-dirs:     src
   exposed-modules:     
     Bippy
     Bippy.Proto
@@ -24,66 +47,25 @@ library
     Bippy.Test.Types
     Bippy.Test.Proto
 
-  build-depends: base 
-               , bytestring   
-               , cereal
-               , cryptonite
-               , either
-               , haskoin-core
-               , lens
-               , mtl     
-               , network-uri
-               , protobuf     
-               , QuickCheck                     
-               , quickcheck-instances
-               , text         
-               , time
-               , x509
-               , x509-store
-
 executable bippy-cli
+  import:             buildenv
   hs-source-dirs:     app
   main-is:            Main.hs
-  default-language:   Haskell2010
-  default-extensions: OverloadedStrings
-                    , ScopedTypeVariables
   ghc-options:        -threaded -rtsopts -with-rtsopts=-N -Wall 
                       -Werror
-  build-depends: base
-               , bippy
-               , bytestring
-               , cereal
-               , cryptonite
-               , either
-               , haskoin-core
-               , mtl     
-               , optparse-applicative
-               , protobuf     
-               , string-conversions
-               , time
-               , transformers
-               , QuickCheck                     
-               , x509
-               , x509-store
+  build-depends: bippy
 
 test-suite bippy-test
+  import:             buildenv
   hs-source-dirs:     test
-  default-language:   Haskell2010
-  default-extensions: OverloadedStrings
-                    , ScopedTypeVariables
   ghc-options:        -threaded -rtsopts -with-rtsopts=-N -Wall -Werror
-  other-modules:     
-    Bippy.Tests
   type:               exitcode-stdio-1.0
   main-is:            Main.hs
-  build-depends: bippy
-               , base
-               , bytestring  
-               , haskoin-core
-               , x509
-               , x509-store
-               , HUnit                          
-               , QuickCheck                     
-               , test-framework                 
-               , test-framework-quickcheck2     
-               , test-framework-hunit           
+  other-modules:     
+    Bippy.Tests
+  build-depends:      
+    bippy,
+    HUnit,
+    test-framework,
+    test-framework-quickcheck2,
+    test-framework-hunit,
