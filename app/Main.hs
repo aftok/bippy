@@ -60,10 +60,10 @@ writeSample1 ctx = do
   pkiEntries <- liftIO $ readSignedObject "test-resources/ca/intermediate/certs/aftok.bip70-chain.cert.pem"
 
   -- generate payment request
-  let privKey = case head privKeys of
-        PrivKeyRSA k -> k
-        _ -> error "Only RSA keys are supported for payment request signing."
-      pkiData = X509SHA256 . CertificateChain $ pkiEntries
+  privKey <- case privKeys of
+        (PrivKeyRSA k : _) -> pure k
+        _ -> throwError InvalidParameters
+  let pkiData = X509SHA256 . CertificateChain $ pkiEntries
 
   paymentRequest <- BippyM . ExceptT $ createPaymentRequest privKey pkiData paymentDetails
   liftIO $ B.writeFile "work/sample1.bitcoinpaymentrequest" . runPut $ encodeMessage paymentRequest

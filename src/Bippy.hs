@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE OverloadedRecordDot #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module Bippy
   ( createPaymentDetails,
@@ -24,7 +24,7 @@ import Data.Text (Text, pack)
 import Data.Time.Clock
 import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import Crypto.Secp256k1 (Ctx)
-import Haskoin.Network (Network, name)
+import Haskoin.Network.Data (Network (..))
 import Network.URI
 
 createPaymentDetails ::
@@ -46,9 +46,9 @@ createPaymentDetails ::
   Maybe ByteString ->
   -- | Returns the Protocol Buffer containing payment details.
   P.PaymentDetails
-createPaymentDetails ctx network outputs time expiry memo payment_url merchant_data =
+createPaymentDetails ctx Network {name = networkName} outputs time expiry memo payment_url merchant_data =
   P.PaymentDetails
-    { P.network = putField . Just . pack $ network.name,
+    { P.network = putField . Just . pack $ networkName,
       P.outputs = putField $ fmap (outputProto ctx) outputs,
       P.time = putField $ posixSeconds time,
       P.expires = putField $ posixSeconds . expiryTime <$> expiry,
