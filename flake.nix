@@ -2,7 +2,7 @@
   description = "Bippy: BIP-70 in Haskell";
 
   inputs = {
-    nixpkgs.url = github:NixOS/nixpkgs/release-23.05;
+    nixpkgs.url = "github:NixOS/nixpkgs/release-24.05";
     flake-utils.url = "github:numtide/flake-utils";
   };
 

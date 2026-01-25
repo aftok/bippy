@@ -10,8 +10,11 @@ import Bippy
 import qualified Bippy.Proto as P
 import Bippy.Types
 import Control.Monad.Except
+import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad.Trans.Class (lift)
 import Crypto.PubKey.RSA.Types (Error (..))
 import Crypto.Random.Types (MonadRandom, getRandomBytes)
+import Crypto.Secp256k1 (Ctx, withContext)
 import qualified Data.ByteString as B
 import Data.Maybe (fromJust)
 import Data.ProtocolBuffers (encodeMessage)
@@ -20,16 +23,16 @@ import Data.Time.Clock
 import Data.X509
 import Data.X509.File (readKeyFile, readSignedObject)
 import Haskoin.Address (Address (..), addrToText, addressToOutput, textToAddr)
-import Haskoin.Constants (btcTest)
+import Haskoin.Network.Constants (btcTest)
 import Haskoin.Util.Arbitrary.Crypto (arbitraryHash160)
 import Test.QuickCheck
 
 main :: IO ()
-main = do
+main = withContext $ \ctx -> do
   hash <- generate arbitraryHash160
   putStrLn (show . addrToText btcTest . PubKeyAddress $ hash)
 
-  either (putStrLn . show) pure =<< (runExceptT . runBippyM) writeSample1
+  either (putStrLn . show) pure =<< (runExceptT . runBippyM) (writeSample1 ctx)
 
 newtype BippyM e a = BippyM {runBippyM :: ExceptT e IO a}
   deriving (Functor, Applicative, Monad)
@@ -44,10 +47,10 @@ instance MonadError e (BippyM e) where
   throwError = BippyM . throwError
   catchError b f = BippyM $ catchError (runBippyM b) (runBippyM . f)
 
-writeSample1 :: BippyM Error ()
-writeSample1 = do
+writeSample1 :: Ctx -> BippyM Error ()
+writeSample1 ctx = do
   t <- liftIO $ getCurrentTime
-  let paymentDetails = sample1 t
+  let paymentDetails = sample1 ctx t
   liftIO $ B.writeFile "work/sample1.paymentdetails" . runPut $ encodeMessage paymentDetails
 
   -- load the private key
@@ -76,9 +79,10 @@ recipient1 = fromJust $ textToAddr btcTest "mmBiyGP8TrX1erzEbX8jR5F56fLoxSX2Dr"
 recipient2 :: Address
 recipient2 = fromJust $ textToAddr btcTest "n4XB4L5rNpPD29CGDMfV6hcfLPPC13HkXV"
 
-sample1 :: UTCTime -> P.PaymentDetails
-sample1 sampleTime =
+sample1 :: Ctx -> UTCTime -> P.PaymentDetails
+sample1 ctx sampleTime =
   createPaymentDetails
+    ctx
     btcTest
     [ Output (Satoshi 10000) (addressToOutput recipient1),
       Output (Satoshi 20000) (addressToOutput recipient2)

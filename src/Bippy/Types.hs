@@ -13,7 +13,9 @@ import Data.Time.Clock
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Data.Word (Word64)
 import Data.X509
-import Haskoin.Script (ScriptOutput, encodeOutputBS)
+import Crypto.Secp256k1 (Ctx)
+import qualified Data.Serialize as S
+import Haskoin.Script (ScriptOutput, encodeOutput)
 
 newtype Satoshi = Satoshi Word64 deriving (Eq, Enum, Ord, Show)
 
@@ -46,11 +48,11 @@ data Output = Output
   }
   deriving (Eq)
 
-outputProto :: Output -> P.Output
-outputProto (Output (Satoshi a) s) =
+outputProto :: Ctx -> Output -> P.Output
+outputProto ctx (Output (Satoshi a) s) =
   P.Output
     { P.amount = putField $ Just a,
-      P.script = putField $ encodeOutputBS s
+      P.script = putField $ S.encode (encodeOutput ctx s)
     }
 
 x509CertificatesProto :: CertificateChain -> P.X509Certificates
